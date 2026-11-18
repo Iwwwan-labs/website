@@ -3,40 +3,35 @@
 Guidance for AI agents working in this repository.
 
 ## What this is
-
-The public landing page for Iwwwan-labs. Static HTML and CSS only. There is no
-build step, no framework, and no dependencies.
+The public website for Iwwwan-labs. It is intentionally built with semantic HTML, CSS, and a small progressive-enhancement script. Keep it dependency-free.
 
 ## Layout
-
-- `index.html` — the entire page. Copy lives here.
-- `styles.css` — all styling. Design tokens are CSS custom properties in `:root`.
-- `.github/workflows/deploy-pages.yml` — deploys the repository root to GitHub Pages.
+- `index.html` — page content, metadata, structured data, and GitHub API integration.
+- `styles.css` — all visual styles and design tokens.
+- `scripts/check_site.py` — dependency-free HTML checks.
+- `sitemap.xml` and `robots.txt` — search crawler metadata.
+- `.github/workflows/` — quality checks and GitHub Pages deployment.
 
 ## Rules
-
-- Do not add a build step, bundler, or framework. This repository stays dependency-free.
-- Do not add JavaScript beyond small progressive enhancements. The page must work with JS disabled.
-- Keep all styling in `styles.css`. Do not add inline `style` attributes.
-- Preserve accessibility: keep the skip link, the landmark elements (`header`, `main`, `footer`, `nav`), and heading order.
-- Maintain the color contrast of the existing palette. Check any new color against the background before using it.
-- Respect `prefers-reduced-motion`.
+- Do not add a framework, bundler, package manager, or build step.
+- Do not add JavaScript libraries. Small progressive enhancements are acceptable.
+- Keep all styling in `styles.css`; do not add inline style attributes.
+- Preserve semantic landmarks, skip navigation, heading order, and keyboard access.
+- Use safe DOM APIs (`textContent` / `createElement`) for external API data. Never inject repository data with `innerHTML`.
+- The site must remain useful if JavaScript or the GitHub API is unavailable.
+- Respect `prefers-reduced-motion` and maintain readable contrast.
 
 ## Commands
-
 ```bash
-# Serve locally
 python3 -m http.server 8000
+python3 scripts/check_site.py
 ```
 
-There is no test suite. Verify changes by loading the page and checking both the
-desktop and the narrow (under 640px) layout.
-
 ## Before committing
+- Check at 320px, 768px, and 1440px widths.
+- Check keyboard focus and skip navigation.
+- Ensure external links use safe target/rel attributes.
+- Ensure the quality workflow passes.
+- Do not merge pull requests without explicit user approval.
 
-- The page renders correctly at 320px, 768px, and 1440px widths.
-- Keyboard navigation reaches every interactive element.
-- No console errors.
-
-Follow the organization conventions in
-[`Iwwwan-labs/.github`](https://github.com/Iwwwan-labs/.github/blob/main/docs/CONVENTIONS.md).
+Follow [Iwwwan-labs/.github conventions](https://github.com/Iwwwan-labs/.github/blob/main/docs/CONVENTIONS.md).
