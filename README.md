@@ -23,14 +23,20 @@ python3 -m http.server 8000
 
 ## Deploy
 
-Push to `main`. The workflow deploys automatically. Before the first run, enable
-Pages once: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+Push to `main`. The workflow deploys automatically.
+
+On a brand-new repository, Pages is disabled, so the first run fails with
+`Resource not accessible by integration` while trying to create the Pages site.
+Enable it once by hand: **Settings → Pages → Build and deployment → Source:
+GitHub Actions**. Later runs then succeed without intervention.
+
+The published URL is <https://iwwwan-labs.github.io/website/>.
 
 ## Editing
 
 - Copy lives directly in `index.html`.
 - Design tokens (colors, radius, width) are CSS custom properties at the top of `styles.css`.
-- Replace the placeholder `hello@example.com` address with the real contact address.
+- Contact links point at the GitHub organization. Replace them with a real address or form when one exists.
 
 ## Conventions
 
