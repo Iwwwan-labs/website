@@ -1,0 +1,80 @@
+name: Website quality and Pages
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Pull request runs cancel superseded runs. Push and manual runs never cancel,
+# so an in-flight deployment is not aborted by a newer commit.
+concurrency:
+  group: website-quality-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  static-checks:
+    name: Static website checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.x"
+      - name: Validate HTML structure, links, and published files
+        run: python3 scripts/check_site.py
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: static-checks
+    # Pull requests are validated only; a failed, skipped, or cancelled
+    # quality job leaves this job unrun, so nothing is ever published.
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    # Job-level permissions replace the workflow-level block, so contents: read
+    # must be repeated here for actions/checkout.
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # Explicit allowlist: only public site files are published. The list is
+      # mirrored by PUBLIC_FILES in scripts/check_site.py.
+      - name: Stage public site files
+        run: |
+          mkdir -p _site
+          for file in index.html styles.css sitemap.xml robots.txt 404.html; do
+            if [ ! -f "$file" ]; then
+              echo "::error file=$file::Published site file is missing"
+              exit 1
+            fi
+            cp "$file" _site/
+          done
+          ls -1 _site
+
+      - name: Configure Pages
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+
+      - name: Upload site
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: _site
+
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

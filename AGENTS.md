@@ -8,9 +8,16 @@ The public website for Iwwwan-labs. It is intentionally built with semantic HTML
 ## Layout
 - `index.html` — page content, metadata, structured data, and GitHub API integration.
 - `styles.css` — all visual styles and design tokens.
-- `scripts/check_site.py` — dependency-free HTML checks.
+- `404.html` — custom not-found page, styled from `styles.css`.
+- `scripts/check_site.py` — dependency-free HTML, link, and published-file checks.
 - `sitemap.xml` and `robots.txt` — search crawler metadata.
-- `.github/workflows/` — quality checks and GitHub Pages deployment.
+- `.github/workflows/pages.yml` — quality checks, then a gated Pages deployment.
+- `.github/dependabot.yml` — weekly GitHub Actions updates.
+
+## Publishing
+- The `deploy` job `needs: static-checks`, so it never runs when checks fail, are skipped, or are cancelled.
+- Only files listed in `PUBLIC_FILES` (`scripts/check_site.py`) are staged into `_site/` and published. Add a file there and to the workflow staging loop together.
+- `404.html` uses root-absolute `/website/...` paths because Pages serves it for missing URLs at any depth.
 
 ## Rules
 - Do not add a framework, bundler, package manager, or build step.
