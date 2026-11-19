@@ -21,10 +21,12 @@ class SiteParser(HTMLParser):
         self.ids, self.links, self.missing_alt, self.inline_styles = [], [], [], []
         self.has_main = self.has_title = self.has_description = False
         self.robots = ""
+        self.classes = set()
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
         if "id" in attrs: self.ids.append(attrs["id"])
+        self.classes.update(attrs.get("class", "").split())
         if tag == "a" and "href" in attrs: self.links.append(attrs["href"])
         if tag == "img" and "alt" not in attrs: self.missing_alt.append(self.getpos())
         if tag == "main": self.has_main = True
@@ -67,6 +69,9 @@ def check_page(name, errors):
     if parser.inline_styles: errors.append(name + ": inline style attributes found: " + str(parser.inline_styles))
     if name == "404.html" and "noindex" not in parser.robots:
         errors.append(name + ": error page must set robots noindex")
+    # styles.css hides the primary nav links below 680px unless a mobile menu exists.
+    if "site-nav" in parser.classes and "mobile-menu" not in parser.classes:
+        errors.append(name + ": navigation needs a mobile menu; nav links are hidden on small screens")
     for href in parser.links:
         if not href or href.startswith(("#", "mailto:", "tel:")): continue
         resolved = resolve_local(href)
