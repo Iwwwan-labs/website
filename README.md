@@ -15,11 +15,12 @@ Public website for Iwwwan-labs, an independent software engineering studio.
 | --- | --- |
 | `index.html` | Website content, SEO metadata, structured data, repository showcase |
 | `styles.css` | Responsive styles and design tokens |
-| `scripts/check_site.py` | Dependency-free HTML and local-link checks |
+| `404.html` | Custom not-found page |
+| `scripts/check_site.py` | Dependency-free HTML, local-link, and published-file checks |
 | `sitemap.xml` | Sitemap |
 | `robots.txt` | Search crawler guidance |
-| `.github/workflows/quality.yml` | Pull request and main-branch quality checks |
-| `.github/workflows/deploy-pages.yml` | GitHub Pages deployment |
+| `.github/workflows/pages.yml` | Quality checks, then a gated GitHub Pages deployment |
+| `.github/dependabot.yml` | Weekly GitHub Actions version updates |
 
 ## Run locally
 ```bash
@@ -34,10 +35,12 @@ The Work section reads public repositories from the GitHub REST API at runtime:
 No token or secret is used. If the API is unavailable, the repository section displays a fallback message and the rest of the website remains usable.
 
 ## Checks
-Run locally with `python3 scripts/check_site.py`. It uses only the Python standard library. The same check runs for pull requests and pushes to `main`.
+Run locally with `python3 scripts/check_site.py`. It uses only the Python standard library. It validates every HTML page (`index.html`, `404.html`) and checks that the deploy workflow publishes exactly the allowlisted files in `PUBLIC_FILES`. The same check runs for pull requests.
 
 ## Deploy
-Set Pages source to **GitHub Actions** in Settings → Pages. Pushes to `main` deploy automatically. Pull requests run quality checks but do not publish the site.
+One-time setup: set Pages source to **GitHub Actions** in Settings → Pages. The workflow does not enable Pages for you, because `GITHUB_TOKEN` cannot change that setting.
+
+`.github/workflows/pages.yml` runs quality checks in the `static-checks` job and the `deploy` job `needs:` it, so a failed, skipped, or cancelled check never reaches deployment. Pull requests run `static-checks` only; manual dispatches run both. Only `index.html`, `styles.css`, `sitemap.xml`, `robots.txt`, and `404.html` are staged into `_site/` and published; documentation, scripts, and workflow files are never uploaded.
 
 ## Editing
 - Keep visual styles in `styles.css`.
